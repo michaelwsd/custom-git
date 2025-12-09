@@ -48,7 +48,7 @@ public class Main {
         String content = extractString(decompressed);
 
         // print content
-        System.out.print(new String(content));
+        System.out.print(content);
 
       }
       default -> System.out.println("Unknown command: " + command);
@@ -58,7 +58,6 @@ public class Main {
   public static String extractString(byte[] decompressed) {
     int nullIndex = -1;
     for (int i = 0; i < decompressed.length; i++) {
-      System.out.println(decompressed[i]);
       if (decompressed[i] == 0) {
           nullIndex = i;
           break;
