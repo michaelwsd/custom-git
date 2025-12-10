@@ -25,11 +25,11 @@ public class Main {
       }
 
       /*
-      Input: SHA-1 Encoded Hash
-      1. From the hash, we get the folder name (first 2) and file name (rest 38)
-      2. Retrieve file from .git/objects/<first2>/<rest38>
-      3. Decompress using zlib, we get the blob header -> blob <size>\0<content>, in bytes
-      4. Read until a null byte \0, retrieve the content after it, turn into String
+      Input: Blob Hash
+      1. From the hash, we get the folder name (first 2) and file name (rest 38).
+      2. Retrieve file from .git/objects/<first2>/<rest38>.
+      3. Decompress using zlib, we get the blob header -> blob <size>\0<content>, in bytes.
+      4. Read until a null byte \0, retrieve the content after it, turn into String.
       */
       case "cat-file" -> {
         if (args.length < 3) throw new IllegalArgumentException("Usage: cat-file <flag> <hash>");
@@ -41,9 +41,9 @@ public class Main {
 
       /*
       Input: File Name
-      1. Create blob header -> "blob <size>\0<content>", in bytes
-      2. Compute SHA-1 encoding of the content, giving the folder (first 2) and file (rest 38) in .git/objects
-      3. Compress blob header using zlib and store it in .git/objects/<first2>/<rest38> 
+      1. Create blob header -> "blob <size>\0<content>", in bytes.
+      2. Compute SHA-1 encoding of the content, giving the folder (first 2) and file (rest 38) in .git/objects.
+      3. Compress blob header using zlib and store it in .git/objects/<first2>/<rest38>.
       */
       case "hash-object" -> {
         if (args.length < 3) throw new IllegalArgumentException("Usage: hash-object <flag> <file>");
@@ -53,6 +53,12 @@ public class Main {
         Blob.runHashObject(file);
       }
 
+      /*
+      Input: Tree Hash
+      1. Get object path from tree hash, decode the object file using zlib.
+      2. Split on each null byte to get the entries <mode> <name>\0<sha>.
+      3. Extract name from each entry and print out to stdout.
+      */
       case "ls-tree" -> {
         if (args.length < 3) throw new IllegalArgumentException("Usage: ls-tree <flag> <hash>");
         String flag = args[1], hash = args[2];

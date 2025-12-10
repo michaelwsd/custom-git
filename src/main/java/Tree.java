@@ -19,6 +19,7 @@ public class Tree {
         byte[] decompressedData = Utils.decompressZlib(compressedData);
         List<String> splitData = byteToString(decompressedData);
 
+        // print each file name
         for (int i = 1; i < splitData.size()-1; i++) {
             String curr = splitData.get(i);
             String[] parts = curr.split(" ");
