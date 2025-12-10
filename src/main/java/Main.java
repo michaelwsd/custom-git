@@ -31,6 +31,13 @@ public class Main {
         }
       }
 
+      /*
+      Input: SHA-1 Encoded Hash
+      1. From the hash, we get the folder name (first 2) and file name (rest 38)
+      2. Retrieve file from .git/objects/<first2>/<rest38>
+      3. Decompress using zlib, we get the blob header -> blob <size>\0<content>, in bytes
+      4. Read until a null byte \0, retrieve the content after it, turn into String
+      */
       case "cat-file" -> {
         if (args.length < 3) throw new IllegalArgumentException("Usage: cat-file <flag> <hash>");
         String flag = args[1], hash = args[2];
@@ -38,7 +45,7 @@ public class Main {
         if (!flag.equals("-p")) throw new IllegalArgumentException("Only -p is supported");
 
         String folderName = hash.substring(0, 2), fileName = hash.substring(2);
-        Path objectPath= Paths.get(currentDir, ".git/objects", folderName, fileName);
+        Path objectPath = Paths.get(currentDir, ".git/objects", folderName, fileName);
 
         if (!Files.exists(objectPath)) throw new RuntimeException("Object not found: " + hash);
         byte[] compressed = Files.readAllBytes(objectPath);;
@@ -49,6 +56,12 @@ public class Main {
         System.out.print(content);
       }
 
+      /*
+      Input: File Name
+      1. Create blob header -> "blob <size>\0<content>", in bytes
+      2. Compute SHA-1 encoding of the content, giving the folder (first 2) and file (rest 38) in .git/objects
+      3. Compress blob header using zlib and store it in .git/objects/<first2>/<rest38> 
+      */
       case "hash-object" -> {
         if (args.length < 3) throw new IllegalArgumentException("Usage: hash-object <flag> <hash>");
         String flag = args[1], file = args[2];
@@ -81,6 +94,7 @@ public class Main {
     }
   }
 
+  // Turn blob header to byte array
   public static byte[] getObjectContent(Path path) throws Exception {
     byte[] content = Files.readAllBytes(path);
     String header = "blob " + content.length + "\0";
@@ -94,6 +108,7 @@ public class Main {
     return store;
   }
 
+  // SHA-1 Encoding
   public static String computeSHA1(byte[] store) throws Exception { // path of the file
     MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
     byte[] hashBytes = sha1.digest(store);
@@ -106,6 +121,7 @@ public class Main {
     return objectId; // first 2 is dir, last 38 is file name
   }
 
+  // Extract string content from blob header in bytes
   public static String extractString(byte[] decompressed) {
     int nullIndex = -1;
     for (int i = 0; i < decompressed.length; i++) {
@@ -124,6 +140,7 @@ public class Main {
     return new String(content);
   }
 
+  // Zlib Compression
   public static byte[] compressZlib(byte[] decompressedData) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); // in memory stream that collects bytes, don't need to write to file, everything in memory
     DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(outputStream); // compresses any data written to it using zlib
@@ -133,6 +150,7 @@ public class Main {
     return outputStream.toByteArray();
   }
 
+  // Zlib Decompression
   public static byte[] decompressZlib(byte[] compressedData) {
     try {
       Inflater inflater = new Inflater(); // zlib decompressor 
