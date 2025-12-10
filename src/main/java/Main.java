@@ -46,7 +46,7 @@ public class Main {
       3. Compress blob header using zlib and store it in .git/objects/<first2>/<rest38> 
       */
       case "hash-object" -> {
-        if (args.length < 3) throw new IllegalArgumentException("Usage: hash-object <flag> <hash>");
+        if (args.length < 3) throw new IllegalArgumentException("Usage: hash-object <flag> <file>");
         String flag = args[1], file = args[2];
         if (!flag.equals("-w")) throw new IllegalArgumentException("Only -w is supported");
         
@@ -54,7 +54,11 @@ public class Main {
       }
 
       case "ls-tree" -> {
-        
+        if (args.length < 3) throw new IllegalArgumentException("Usage: ls-tree <flag> <hash>");
+        String flag = args[1], hash = args[2];
+        if (!flag.equals("--name-only")) throw new IllegalArgumentException("Only --name-only is supported");
+
+        Tree.runLsTree(hash);
       }
 
       default -> System.out.println("Unknown command: " + command);
