@@ -5,7 +5,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 
 public class Utils {
-    
+
     // SHA-1 Encoding
     public static String computeSHA1(byte[] store) throws Exception { // path of the file
         MessageDigest sha1 = MessageDigest.getInstance("SHA-1");

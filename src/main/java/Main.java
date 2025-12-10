@@ -67,6 +67,12 @@ public class Main {
         Tree.runLsTree(hash);
       }
 
+      case "write-tree" -> {
+        if (args.length > 1) throw new IllegalArgumentException("Usage: write-tree");
+
+        Tree.runWriteTree();
+      }
+
       default -> System.out.println("Unknown command: " + command);
     }
   }

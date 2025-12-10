@@ -28,6 +28,11 @@ public class Tree {
         }
     }
 
+    public static void runWriteTree() {
+        
+    }
+
+    // Split a byte array to a list of strings, split on null byte
     public static List<String> byteToString(byte[] data) {
         List<String> result = new ArrayList<>();
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
