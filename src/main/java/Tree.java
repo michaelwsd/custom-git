@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tree {
-    public static void runLsTree(String hash) throws Exception {
+    public static void runLsTree(String hash, boolean nameOnly) throws Exception {
         String folderName = hash.substring(0, 2);
         String fileName = hash.substring(2);
 
@@ -17,15 +17,46 @@ public class Tree {
         // decompress tree object file
         byte[] compressedData = Files.readAllBytes(objectPath);
         byte[] decompressedData = Utils.decompressZlib(compressedData);
-        List<String> splitData = byteToString(decompressedData);
+        
+        // skip header
+        int i = 0;
+        while (decompressedData[i] != 0) i++;
+        i++;
 
-        // print each file name
-        for (int i = 1; i < splitData.size()-1; i++) {
-            String curr = splitData.get(i);
-            String[] parts = curr.split(" ");
-            String name = parts[parts.length-1];
-            System.out.println(name);
+        while (i < decompressedData.length) {
+            // read mode
+            int start = i;
+            while (decompressedData[i] != ' ') i++;
+            String mode = new String(decompressedData, start, i-start);
+            i++;
+
+            // read filename
+            start = i;
+            while (decompressedData[i] != 0) i++;
+            String file = new String(decompressedData, start, i-start);
+            i++;
+            
+            // Read 20-byte binary SHA
+            byte[] shaBytes = new byte[20];
+            System.arraycopy(decompressedData, i, shaBytes, 0, 20);
+            i += 20;
+    
+            String shaHex = byteToHex(shaBytes);
+    
+            if (nameOnly) {
+                System.out.println(file);
+            } else {
+                System.out.println(mode + " blob " + shaHex + "\t" + file);
+            }
         }
+    }
+
+    private static String byteToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     public static void runWriteTree() throws Exception {
@@ -39,6 +70,7 @@ public class Tree {
         List<byte[]> entries = new ArrayList<>();
         
         try (var stream = Files.list(dir)) {
+            // sort all files/dir names
             List<Path> children = stream
             .filter(p -> !p.getFileName().toString().equals(".git"))
             .sorted((a, b) -> a.getFileName().toString()

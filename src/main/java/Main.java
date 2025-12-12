@@ -66,7 +66,7 @@ public class Main {
         String flag = args[1], hash = args[2];
         if (!flag.equals("--name-only")) throw new IllegalArgumentException("Only --name-only is supported");
 
-        Tree.runLsTree(hash);
+        Tree.runLsTree(hash, true);
       }
 
       case "write-tree" -> {
