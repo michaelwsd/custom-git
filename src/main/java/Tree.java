@@ -43,19 +43,14 @@ public class Tree {
     
             String shaHex = byteToHex(shaBytes);
     
-            if (nameOnly) {
-                System.out.println(file);
-            } else {
-                System.out.println(mode + " blob " + shaHex + "\t" + file);
-            }
+            if (nameOnly) System.out.println(file);
+            else System.out.println(mode + " blob " + shaHex + "\t" + file);
         }
     }
 
     private static String byteToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
+        for (byte b : bytes) sb.append(String.format("%02x", b));
         return sb.toString();
     }
 
@@ -79,13 +74,8 @@ public class Tree {
 
             for (Path entry: children) {
                 if (entry.getFileName().toString().equals(".git")) continue;
-
-                // case if it's a directory
-                if (Files.isDirectory(entry)) {
-                    addObject(entry, entries, true);
-                } else {
-                    addObject(entry, entries, false);
-                }
+                if (Files.isDirectory(entry)) addObject(entry, entries, true);
+                else addObject(entry, entries, false);
             }
         }
 
@@ -100,7 +90,7 @@ public class Tree {
         System.arraycopy(headerBytes, 0, full, 0, headerBytes.length);
         System.arraycopy(body, 0, full, headerBytes.length, body.length);
 
-        // Compute SHA and write object
+        // compute SHA and write object
         String sha = Utils.computeSHA1(full);
         byte[] compressed = Utils.compressZlib(full);
 
@@ -123,26 +113,5 @@ public class Tree {
         buffer.write((mode + " " + name + "\0").getBytes(StandardCharsets.UTF_8));
         buffer.write(shaRaw);
         entries.add(buffer.toByteArray());
-    }
-
-    // Split a byte array to a list of strings, split on null byte
-    public static List<String> byteToString(byte[] data) {
-        List<String> result = new ArrayList<>();
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-        for (byte b: data) {
-            if (b == 0) {
-                result.add(buffer.toString(StandardCharsets.UTF_8));
-                buffer.reset();
-            } else {
-                buffer.write(b);
-            }
-        }
-
-        if (buffer.size() > 0) {
-            result.add(buffer.toString(StandardCharsets.UTF_8));
-        }
-
-        return result;
     }
 }

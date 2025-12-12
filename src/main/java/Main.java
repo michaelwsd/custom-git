@@ -69,6 +69,11 @@ public class Main {
         Tree.runLsTree(hash, true);
       }
 
+      /*
+      Input: None
+      If file -> Write blob
+      If directory -> Recursively write blob
+      */
       case "write-tree" -> {
         if (args.length > 1) throw new IllegalArgumentException("Usage: write-tree");
 
