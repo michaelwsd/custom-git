@@ -6,6 +6,23 @@ import java.util.zip.Inflater;
 
 public class Utils {
 
+    /*  
+    Input: 40 Character SHA-1
+    Each entry (file or directory) in a Git tree object is stored as <mode> <name>\0<20 raw bytes of hash>.
+    The last part is the SHA-1 of the file not as text, but as 20 raw bytes. 
+    SHA-1 has 40 hex (hexadecimal digits), 1 hex digit is 4 bits -> 2 hex digits is 1 byte. 
+    This function essentially converts 40 hex digits to 20 raw bytes. 
+    */
+    public static byte[] hexToBytes(String sha1) {
+        byte[] res = new byte[20];
+        for (int i = 0; i < 20; i++) {
+            int index = i * 2; // starting index
+            res[i] = (byte) Integer.parseInt(sha1.substring(index, index + 2), 16);
+        }
+
+        return res;
+    }
+
     // SHA-1 Encoding
     public static String computeSHA1(byte[] store) throws Exception { // path of the file
         MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
@@ -17,25 +34,6 @@ public class Utils {
         String objectId = sb.toString();
 
         return objectId; // first 2 is dir, last 38 is file name
-    }
-
-    // Extract string content from blob header in bytes
-    public static String extractString(byte[] decompressed) {
-        int nullIndex = -1;
-        for (int i = 0; i < decompressed.length; i++) {
-        if (decompressed[i] == 0) { // go until a null byte
-            nullIndex = i;
-            break;
-        }
-        }
-
-        if (nullIndex == -1) throw new RuntimeException("Invalid Git object format");
-
-        // extract content after header
-        byte[] content = new byte[decompressed.length - nullIndex - 1];
-        System.arraycopy(decompressed, nullIndex + 1, content, 0, content.length);
-
-        return new String(content);
     }
 
     // Zlib Compression

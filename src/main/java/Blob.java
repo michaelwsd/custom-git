@@ -5,20 +5,19 @@ import java.nio.file.Paths;
 
 public class Blob {
 
-    public static void runCatFile(String hash) throws Exception {
+    public static String runCatFile(String hash) throws Exception {
         String folderName = hash.substring(0, 2), fileName = hash.substring(2);
         Path objectPath = Paths.get(Main.currentDir, ".git/objects", folderName, fileName);
 
         if (!Files.exists(objectPath)) throw new RuntimeException("Object not found: " + hash);
         byte[] compressed = Files.readAllBytes(objectPath);;
         byte[] decompressed = Utils.decompressZlib(compressed);
-        String content = Utils.extractString(decompressed);
+        String content = extractString(decompressed);
 
-        // print content
-        System.out.print(content);
+        return content;
     }
 
-    public static void runHashObject(String file) throws Exception {
+    public static String runHashObject(String file) throws Exception {
         Path path = Paths.get(file);
 
         if (!Files.exists(path)) throw new RuntimeException("Object not found: " + file);
@@ -37,7 +36,7 @@ public class Blob {
         Path objectFile = objectDir.resolve(fileName); // add file name to path
         Files.write(objectFile, compressedData);
 
-        System.out.println(objectId);
+        return objectId;
     }
 
     // Turn blob header to byte array
@@ -52,5 +51,24 @@ public class Blob {
         System.arraycopy(content, 0, store, headerBytes.length, content.length);
 
         return store;
+    }
+
+    // Extract string content from blob header in bytes
+    public static String extractString(byte[] decompressed) {
+        int nullIndex = -1;
+        for (int i = 0; i < decompressed.length; i++) {
+        if (decompressed[i] == 0) { // go until a null byte
+            nullIndex = i;
+            break;
+        }
+        }
+
+        if (nullIndex == -1) throw new RuntimeException("Invalid Git object format");
+
+        // extract content after header
+        byte[] content = new byte[decompressed.length - nullIndex - 1];
+        System.arraycopy(decompressed, nullIndex + 1, content, 0, content.length);
+
+        return new String(content);
     }
 }

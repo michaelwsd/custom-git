@@ -36,7 +36,8 @@ public class Main {
         String flag = args[1], hash = args[2];
         if (!flag.equals("-p")) throw new IllegalArgumentException("Only -p is supported");
 
-        Blob.runCatFile(hash);
+        String content = Blob.runCatFile(hash);
+        System.out.print(content);
       }
 
       /*
@@ -50,7 +51,8 @@ public class Main {
         String flag = args[1], file = args[2];
         if (!flag.equals("-w")) throw new IllegalArgumentException("Only -w is supported");
         
-        Blob.runHashObject(file);
+        String objectId = Blob.runHashObject(file);
+        System.out.println(objectId);
       }
 
       /*

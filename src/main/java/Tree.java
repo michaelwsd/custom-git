@@ -28,8 +28,63 @@ public class Tree {
         }
     }
 
-    public static void runWriteTree() {
+    public static void runWriteTree() throws Exception {
+        Path root = Paths.get(Main.currentDir);
+        String sha = writeTree(root);
+        System.out.println(sha);
+    }
+
+    // Recursive function to write a blob or tree object
+    public static String writeTree(Path dir) throws Exception {
+        List<byte[]> entries = new ArrayList<>();
         
+        try (var stream = Files.list(dir)) {
+            for (Path entry: stream.toList()) {
+                if (entry.getFileName().toString().equals(".git")) continue;
+
+                // case if it's a directory
+                if (Files.isDirectory(entry)) {
+                    addObject(entry, entries, true);
+                } else {
+                    addObject(entry, entries, false);
+                }
+            }
+        }
+
+        ByteArrayOutputStream treeBody = new ByteArrayOutputStream();
+        for (byte[] e: entries) treeBody.write(e);
+        
+        byte[] body = treeBody.toByteArray();
+        String header = "tree " + body.length + "\0";
+        byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+
+        byte[] full = new byte[headerBytes.length + body.length];
+        System.arraycopy(headerBytes, 0, full, 0, headerBytes.length);
+        System.arraycopy(body, 0, full, headerBytes.length, body.length);
+
+        // Compute SHA and write object
+        String sha = Utils.computeSHA1(full);
+        byte[] compressed = Utils.compressZlib(full);
+
+        String folderName = sha.substring(0, 2);
+        String fileName = sha.substring(2);
+        Path objDir = Paths.get(".git/objects", folderName);
+        Files.createDirectories(objDir);
+        Files.write(objDir.resolve(fileName), compressed);
+
+        return sha;
+    }
+
+    public static void addObject(Path entry, List<byte[]> entries, boolean isDir) throws Exception {
+        String sha1 = isDir ? writeTree(entry) : Blob.runHashObject(entry.toString());
+        String mode = isDir ? "40000" : (Files.isExecutable(entry) ? "100755" : "100644");
+        String name = entry.getFileName().toString();
+        byte[] shaRaw = Utils.hexToBytes(sha1);
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        buffer.write((mode + " " + name + "\0").getBytes(StandardCharsets.UTF_8));
+        buffer.write(shaRaw);
+        entries.add(buffer.toByteArray());
     }
 
     // Split a byte array to a list of strings, split on null byte
