@@ -39,7 +39,13 @@ public class Tree {
         List<byte[]> entries = new ArrayList<>();
         
         try (var stream = Files.list(dir)) {
-            for (Path entry: stream.toList()) {
+            List<Path> children = stream
+            .filter(p -> !p.getFileName().toString().equals(".git"))
+            .sorted((a, b) -> a.getFileName().toString()
+                               .compareTo(b.getFileName().toString()))
+            .toList();
+
+            for (Path entry: children) {
                 if (entry.getFileName().toString().equals(".git")) continue;
 
                 // case if it's a directory
@@ -77,7 +83,7 @@ public class Tree {
 
     public static void addObject(Path entry, List<byte[]> entries, boolean isDir) throws Exception {
         String sha1 = isDir ? writeTree(entry) : Blob.runHashObject(entry.toString());
-        String mode = isDir ? "40000" : (Files.isExecutable(entry) ? "100755" : "100644");
+        String mode = isDir ? GitFileMode.DIRECTORY.getMode() : (Files.isExecutable(entry) ? GitFileMode.EXECUTABLE_FILE.getMode() : GitFileMode.REGULAR_FILE.getMode());
         String name = entry.getFileName().toString();
         byte[] shaRaw = Utils.hexToBytes(sha1);
 
