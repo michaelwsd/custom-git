@@ -83,7 +83,7 @@ public class Main {
       case "commit-tree" -> {
         if (args.length != 6) throw new IllegalArgumentException("Usage: commit-tree <tree_sha> -p <commit_sha> -m <message>");
         String treeSha = args[1], flag1 = args[2], commitSha = args[3], flag2 = args[4], message = args[5];
-        if (flag1 != "-p" || flag2 != "-m") throw new IllegalArgumentException("Only -p and -m are supported");
+        if (flag1.equals("-p") || flag2.equals("-m")) throw new IllegalArgumentException("Only -p and -m are supported");
 
         Commit.runCommitTree(treeSha, commitSha, message);
       }
