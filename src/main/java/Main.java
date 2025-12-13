@@ -32,7 +32,7 @@ public class Main {
       4. Read until a null byte \0, retrieve the content after it, turn into String.
       */
       case "cat-file" -> {
-        if (args.length < 3) throw new IllegalArgumentException("Usage: cat-file <flag> <hash>");
+        if (args.length != 3) throw new IllegalArgumentException("Usage: cat-file <flag> <hash>");
         String flag = args[1], hash = args[2];
         if (!flag.equals("-p")) throw new IllegalArgumentException("Only -p is supported");
 
@@ -47,7 +47,7 @@ public class Main {
       3. Compress blob header using zlib and store it in .git/objects/<first2>/<rest38>.
       */
       case "hash-object" -> {
-        if (args.length < 3) throw new IllegalArgumentException("Usage: hash-object <flag> <file>");
+        if (args.length != 3) throw new IllegalArgumentException("Usage: hash-object <flag> <file>");
         String flag = args[1], file = args[2];
         if (!flag.equals("-w")) throw new IllegalArgumentException("Only -w is supported");
         
@@ -62,7 +62,7 @@ public class Main {
       3. Extract name from each entry and print out to stdout.
       */
       case "ls-tree" -> {
-        if (args.length < 3) throw new IllegalArgumentException("Usage: ls-tree <flag> <hash>");
+        if (args.length != 3) throw new IllegalArgumentException("Usage: ls-tree <flag> <hash>");
         String flag = args[1], hash = args[2];
         if (!flag.equals("--name-only")) throw new IllegalArgumentException("Only --name-only is supported");
 
@@ -78,6 +78,14 @@ public class Main {
         if (args.length > 1) throw new IllegalArgumentException("Usage: write-tree");
 
         Tree.runWriteTree();
+      }
+
+      case "commit-tree" -> {
+        if (args.length != 6) throw new IllegalArgumentException("Usage: commit-tree <tree_sha> -p <commit_sha> -m <message>");
+        String treeSha = args[1], flag1 = args[2], commitSha = args[3], flag2 = args[4], message = args[5];
+        if (flag1 != "-p" || flag2 != "-m") throw new IllegalArgumentException("Only -p and -m are supported");
+
+        Commit.runCommitTree(treeSha, commitSha, message);
       }
 
       default -> System.out.println("Unknown command: " + command);

@@ -36,22 +36,16 @@ public class Tree {
             String file = new String(decompressedData, start, i-start);
             i++;
             
-            // Read 20-byte binary SHA
+            // read 20-byte binary SHA
             byte[] shaBytes = new byte[20];
             System.arraycopy(decompressedData, i, shaBytes, 0, 20);
             i += 20;
     
-            String shaHex = byteToHex(shaBytes);
+            String shaHex = Utils.byteToHex(shaBytes);
     
             if (nameOnly) System.out.println(file);
             else System.out.println(mode + " blob " + shaHex + "\t" + file);
         }
-    }
-
-    private static String byteToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) sb.append(String.format("%02x", b));
-        return sb.toString();
     }
 
     public static void runWriteTree() throws Exception {
@@ -104,7 +98,7 @@ public class Tree {
     }
 
     public static void addObject(Path entry, List<byte[]> entries, boolean isDir) throws Exception {
-        String sha1 = isDir ? writeTree(entry) : Blob.runHashObject(entry.toString());
+        String sha1 = isDir ? writeTree(entry) : Blob.runHashObject(entry.toString()); // recursively compute if dir
         String mode = isDir ? GitFileMode.DIRECTORY.getMode() : (Files.isExecutable(entry) ? GitFileMode.EXECUTABLE_FILE.getMode() : GitFileMode.REGULAR_FILE.getMode());
         String name = entry.getFileName().toString();
         byte[] shaRaw = Utils.hexToBytes(sha1);

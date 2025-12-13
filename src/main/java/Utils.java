@@ -23,6 +23,12 @@ public class Utils {
         return res;
     }
 
+    public static String byteToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) sb.append(String.format("%02x", b));
+        return sb.toString();
+    }
+
     // SHA-1 Encoding
     public static String computeSHA1(byte[] store) throws Exception { // path of the file
         MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
