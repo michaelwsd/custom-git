@@ -43,8 +43,8 @@ public class Main {
       /*
       Input: File Name
       1. Create blob header -> "blob <size>\0<content>", in bytes.
-      2. Compute SHA-1 encoding of the content, giving the folder (first 2) and file (rest 38) in .git/objects.
-      3. Compress blob header using zlib and store it in .git/objects/<first2>/<rest38>.
+      2. Compute SHA-1 encoding of the blob header + content in bytes, giving the folder (first 2) and file (rest 38) in .git/objects.
+      3. Compress blob header + content in bytes using zlib and store it in .git/objects/<first2>/<rest38>.
       */
       case "hash-object" -> {
         if (args.length != 3) throw new IllegalArgumentException("Usage: hash-object <flag> <file>");
@@ -58,8 +58,7 @@ public class Main {
       /*
       Input: Tree Hash
       1. Get object path from tree hash, decode the object file using zlib.
-      2. Split on each null byte to get the entries <mode> <name>\0<sha>.
-      3. Extract name from each entry and print out to stdout.
+      2. Parse the decoded object, print out each name from <mode> <name>\0<20-byte-sha>.
       */
       case "ls-tree" -> {
         if (args.length != 3) throw new IllegalArgumentException("Usage: ls-tree <flag> <hash>");
@@ -80,6 +79,12 @@ public class Main {
         Tree.runWriteTree();
       }
 
+      /*
+      Input: Tree-SHA, Parent-SHA, Message
+      1. Build header and body in bytes.
+      2. Computer SHA-1 of the object to get folder and file. 
+      3. Compress the object using zlib, store it in the folder and file. 
+      */
       case "commit-tree" -> {
         if (args.length != 6) throw new IllegalArgumentException("Usage: commit-tree <tree_sha> -p <commit_sha> -m <message>");
         String treeSha = args[1], flag1 = args[2], commitSha = args[3], flag2 = args[4], message = args[5];
